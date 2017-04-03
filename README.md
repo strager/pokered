@@ -22,17 +22,6 @@ These bugs have been fixed in the both the low compatibility version and the hig
 * (none)
 
 
-## Unfixed bugs
-
-These bugs are known to exist but have not been fixed yet in this edition.
-
-* [An NPC lets the player skip Pewter Gym](http://www.glitchcity.info/wiki/Pewter_Gym_skip_glitch)
-* [Exp. All does not distribute experience properly](http://www.glitchcity.info/wiki/Exp._All_glitch)
-* [Move effectiveness is reported incorrectly for dual-type Pokémon](http://www.glitchcity.info/wiki/Dual-type_damage_misinformation)
-* [Toxic changes Leech Seed's behavior](http://www.glitchcity.info/wiki/Leech_Seed_and_Toxic_stacking)
-* [Trainers notice the player after Fly, black-out, etc.](http://www.glitchcity.info/wiki/Trainer_escape_glitch)
-
-
 ## Compatibility levels
 
 This edition has two versions: a low compatibility version and a high compatibility version.
