@@ -10,16 +10,16 @@ To set up the repository, see [**INSTALL.md**](INSTALL.md).
 
 ### High compatibility
 
-These bugs have been fixed in the the high compatibility version of this edition.
+These changes have been made in the the high compatibility version of this edition.
 
 * (none)
 
 
 ### Low compatibility
 
-These bugs have been fixed in the both the low compatibility version and the high compatibility version of this edition.
+These changes have been made in the both the low compatibility version and the high compatibility version of this edition.
 
-* (none)
+* The player can no longer open the Start menu in a trainer's line of sight.
 
 
 ## Compatibility levels

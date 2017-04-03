@@ -471,14 +471,20 @@ GetSpriteScreenPosition:
 	ld b, a
 	ld a, [hli]     ; $c2x4 (YPosition)
 	sub b           ; relative to player position
-	swap a          ; * 16
+	add a           ; * 16
+	add a
+	add a
+	add a
 	sub $4          ; - 4
 	ld c, a
 	ld a, [wXCoord]
 	ld b, a
 	ld a, [hl]      ; $c2x5 (XPosition)
 	sub b           ; relative to player position
-	swap a          ; * 16
+	add a           ; * 16
+	add a
+	add a
+	add a
 	ld b, a
 	ret
 
@@ -492,31 +498,36 @@ CheckSpriteAvailability:
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
 	ld l, a
-	ld a, [hl]      ; $c2x6 (MovementByte1)
+	ld a, [hld]     ; $c2x6 (MovementByte1)
 	cp $fe
-	jr c, .skipXVisibilityTest ; MovementByte1 < $fe (i.e. the sprite's movement is scripted)
-	ld a, [H_CURRENTSPRITEOFFSET]
-	add $4
-	ld l, a
-	ld b, [hl]      ; $c2x4 (YPosition)
-	ld a, [wYCoord]
-	cp b
-	jr z, .skipYVisibilityTest
-	jr nc, .spriteInvisible ; above screen region
-	add $8                  ; screen is 9 tiles high
-	cp b
-	jr c, .spriteInvisible  ; below screen region
-.skipYVisibilityTest
-	inc l
-	ld b, [hl]      ; $c2x5 (XPosition)
+	jr c, .skipVisibilityTest ; MovementByte1 < $fe (i.e. the sprite's movement is scripted)
+
+; make the sprite invisible if it's off-screen, but if it's
+; off-screen by one tile, keep it visible so the sprite
+; slides onto the screen when the player moves.
+; if ([XPosition] - [wXCoord] < -1 || [XPosition] - [wXCoord] > SCREEN_WIDTH_PIXELS/16) jr .spriteInvisible
+; i.e. if ([XPosition] + 1 - [wXCoord] < 0 || [XPosition] + 1 - [wXCoord] >= SCREEN_WIDTH_PIXELS/16 + 2) jr .spriteInvisible
 	ld a, [wXCoord]
-	cp b
-	jr z, .skipXVisibilityTest
-	jr nc, .spriteInvisible ; left of screen region
-	add $9                  ; screen is 10 tiles wide
-	cp b
-	jr c, .spriteInvisible  ; right of screen region
-.skipXVisibilityTest
+	ld b, a
+	ld a, [hld]     ; $c2x5 (XPosition)
+	inc a
+	sub b
+	jr c, .spriteInvisible
+	cp SCREEN_WIDTH_PIXELS/16 + 2
+	jr nc, .spriteInvisible
+
+; if ([YPosition] - [wYCoord] < -1 || [YPosition] - 1 - [wYCoord] > SCREEN_HEIGHT_PIXELS/16) jr .spriteInvisible
+; i.e. if ([YPosition] + 1 - [wYCoord] < 0 || [YPosition] + 1 - [wYCoord] >= SCREEN_HEIGHT_PIXELS/16 + 3) jr .spriteInvisible
+	ld a, [wYCoord]
+	ld b, a
+	ld a, [hl]      ; $c2x4 (YPosition)
+	inc a
+	sub b
+	jr c, .spriteInvisible
+	cp SCREEN_HEIGHT_PIXELS/16+3
+	jr nc, .spriteInvisible
+
+.skipVisibilityTest:
 ; make the sprite invisible if a text box is in front of it
 ; $5F is the maximum number for map tiles
 	call GetTileSpriteStandsOn
@@ -545,9 +556,9 @@ CheckSpriteAvailability:
 	jr .done
 .spriteVisible
 	ld c, a
-	ld a, [wWalkCounter]
-	and a
-	jr nz, .done           ; if player is currently walking, we're done
+	ld a, [wWalkCounter] ;;;
+	and a ;;;
+	jr nz, .done           ; if player is currently walking, we're done ;;;
 	call UpdateSpriteImage
 	inc h
 	ld a, [H_CURRENTSPRITEOFFSET]
