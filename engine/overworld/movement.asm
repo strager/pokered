@@ -448,26 +448,38 @@ InitializeSpriteStatus:
 
 ; calculates the sprites's screen position from its map position and the player position
 InitializeSpriteScreenPosition:
+	call GetSpriteScreenPosition
+	ld h, wSpriteStateData1 / $100
+	ld a, [H_CURRENTSPRITEOFFSET]
+	add $4
+	ld l, a
+	ld a, c
+	ld [hli], a     ; $c1x4 (YPixels)
+	inc l
+	ld a, b
+	ld [hl], a      ; $c1x6 (XPixels)
+	ret
+
+; calculates the sprite's screen position from its map position and the player position
+; returns xy in bc
+GetSpriteScreenPosition:
 	ld h, wSpriteStateData2 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $4
 	ld l, a
 	ld a, [wYCoord]
 	ld b, a
-	ld a, [hl]      ; $c2x4 (YPosition)
+	ld a, [hli]     ; $c2x4 (YPosition)
 	sub b           ; relative to player position
 	swap a          ; * 16
 	sub $4          ; - 4
-	dec h
-	ld [hli], a     ; $c1x4 (YPixels)
-	inc h
+	ld c, a
 	ld a, [wXCoord]
 	ld b, a
-	ld a, [hli]     ; $c2x5 (XPosition)
+	ld a, [hl]      ; $c2x5 (XPosition)
 	sub b           ; relative to player position
 	swap a          ; * 16
-	dec h
-	ld [hl], a      ; $c1x6 (XPixels)
+	ld b, a
 	ret
 
 ; tests if sprite is off screen or otherwise unable to do anything
