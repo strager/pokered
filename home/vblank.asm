@@ -5,6 +5,10 @@ VBlank::
 	push de
 	push hl
 
+	ld hl, rBGP ; PROFILE
+	set 0, [hl] ; PROFILE
+	set 1, [hl] ; PROFILE
+
 	ld a, [H_LOADEDROMBANK]
 	ld [wVBlankSavedROMBank], a
 
@@ -27,10 +31,19 @@ VBlank::
 	call VBlankCopyDouble
 	call UpdateMovingBgTiles
 	call $ff80 ; hOAMDMA
+
+	ld hl, rBGP ; PROFILE
+	res 0, [hl] ; PROFILE
+	set 1, [hl] ; PROFILE
+
 	ld a, BANK(PrepareOAMData)
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
 	call PrepareOAMData
+
+	ld hl, rBGP ; PROFILE
+	set 0, [hl] ; PROFILE
+	res 1, [hl] ; PROFILE
 
 	; VBlank-sensitive operations end.
 
@@ -81,6 +94,10 @@ VBlank::
 	ld a, [wVBlankSavedROMBank]
 	ld [H_LOADEDROMBANK], a
 	ld [MBC1RomBank], a
+
+	ld hl, rBGP ; PROFILE
+	res 0, [hl] ; PROFILE
+	res 1, [hl] ; PROFILE
 
 	pop hl
 	pop de
