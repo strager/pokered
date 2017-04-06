@@ -502,29 +502,27 @@ CheckSpriteAvailability:
 	cp $fe
 	jr c, .skipVisibilityTest ; MovementByte1 < $fe (i.e. the sprite's movement is scripted)
 
-; make the sprite invisible if it's off-screen, but if it's
-; off-screen by one tile, keep it visible so the sprite
-; slides onto the screen when the player moves.
-; if ([XPosition] - [wXCoord] < -1 || [XPosition] - [wXCoord] > SCREEN_WIDTH_PIXELS/16) jr .spriteInvisible
-; i.e. if ([XPosition] + 1 - [wXCoord] < 0 || [XPosition] + 1 - [wXCoord] >= SCREEN_WIDTH_PIXELS/16 + 2) jr .spriteInvisible
-	ld a, [wXCoord]
-	ld b, a
-	ld a, [hld]     ; $c2x5 (XPosition)
-	inc a
-	sub b
+; make the sprite invisible if it's off-screen
+	call GetSpriteScreenPosition
+; if (XPixels + SPRITE_WIDTH_PIXELS <= 0 || XPixels >= SCREEN_WIDTH_PIXELS) jr .spriteInvisible
+; <= not implemented properly
+	ld a, b
+	add SPRITE_WIDTH_PIXELS
+	cp 0 ; broken
 	jr c, .spriteInvisible
-	cp SCREEN_WIDTH_PIXELS/16 + 2
+	ld a, b
+	add SPRITE_WIDTH_PIXELS
+	cp SCREEN_WIDTH_PIXELS + SPRITE_WIDTH_PIXELS
 	jr nc, .spriteInvisible
 
-; if ([YPosition] - [wYCoord] < -1 || [YPosition] - 1 - [wYCoord] > SCREEN_HEIGHT_PIXELS/16) jr .spriteInvisible
-; i.e. if ([YPosition] + 1 - [wYCoord] < 0 || [YPosition] + 1 - [wYCoord] >= SCREEN_HEIGHT_PIXELS/16 + 3) jr .spriteInvisible
-	ld a, [wYCoord]
-	ld b, a
-	ld a, [hl]      ; $c2x4 (YPosition)
-	inc a
-	sub b
+; if (YPixels + SPRITE_HEIGHT_PIXELS <= 0 || YPixels >= SCREEN_HEIGHT_PIXELS) jr .spriteInvisible
+	ld a, c
+	add SPRITE_HEIGHT_PIXELS
+	cp 0 ; broken
 	jr c, .spriteInvisible
-	cp SCREEN_HEIGHT_PIXELS/16+3
+	ld a, c
+	add SPRITE_HEIGHT_PIXELS
+	cp SCREEN_HEIGHT_PIXELS + SPRITE_HEIGHT_PIXELS
 	jr nc, .spriteInvisible
 
 .skipVisibilityTest:
