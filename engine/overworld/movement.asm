@@ -461,7 +461,8 @@ InitializeSpriteScreenPosition:
 	ret
 
 ; calculates the sprite's screen position from its map position and the player position
-; returns xy in bc
+; if the sprite is partially or fully on-screen, returns xy in bc
+; if the sprite is entirely off-screen, returns $f0ec (i.e. -SPRITE_WIDTH, -SPRITE_HEIGHT) in bc
 GetSpriteScreenPosition:
 	ld h, wSpriteStateData2 / $100
 	ld a, [H_CURRENTSPRITEOFFSET]
@@ -470,22 +471,25 @@ GetSpriteScreenPosition:
 	ld a, [wYCoord]
 	ld b, a
 	ld a, [hli]     ; $c2x4 (YPosition)
-	sub b           ; relative to player position
-	add a           ; * 16
-	add a
-	add a
-	add a
+	sub b           ; relative to map scroll
+	jr c, .offScreen; above top of screen
+	cp 16           ; check for overflow (below bottom of screen)
+	jr nc, .offScreen
+	swap a          ; * 16
 	sub $4          ; - 4
 	ld c, a
 	ld a, [wXCoord]
 	ld b, a
 	ld a, [hl]      ; $c2x5 (XPosition)
-	sub b           ; relative to player position
-	add a           ; * 16
-	add a
-	add a
-	add a
+	sub b           ; relative to map scroll
+	jr c, .offScreen; left of left of screen
+	cp 16           ; check for overflow (right of right of screen)
+	jr nc, .offScreen
+	swap a          ; * 16
 	ld b, a
+	ret
+.offScreen
+	ld bc, $100*($100-SPRITE_WIDTH_PIXELS) + ($100-SPRITE_HEIGHT_PIXELS)
 	ret
 
 ; tests if sprite is off screen or otherwise unable to do anything
@@ -498,18 +502,18 @@ CheckSpriteAvailability:
 	ld a, [H_CURRENTSPRITEOFFSET]
 	add $6
 	ld l, a
-	ld a, [hld]     ; $c2x6 (MovementByte1)
+	ld a, [hl]      ; $c2x6 (MovementByte1)
 	cp $fe
 	jr c, .skipVisibilityTest ; MovementByte1 < $fe (i.e. the sprite's movement is scripted)
 
 ; make the sprite invisible if it's off-screen
 	call GetSpriteScreenPosition
 ; if (XPixels + SPRITE_WIDTH_PIXELS <= 0 || XPixels >= SCREEN_WIDTH_PIXELS) jr .spriteInvisible
-; <= not implemented properly
 	ld a, b
 	add SPRITE_WIDTH_PIXELS
-	cp 0 ; broken
+	cp 0 ; TODO Invert
 	jr c, .spriteInvisible
+	jr z, .spriteInvisible
 	ld a, b
 	add SPRITE_WIDTH_PIXELS
 	cp SCREEN_WIDTH_PIXELS + SPRITE_WIDTH_PIXELS
@@ -518,8 +522,9 @@ CheckSpriteAvailability:
 ; if (YPixels + SPRITE_HEIGHT_PIXELS <= 0 || YPixels >= SCREEN_HEIGHT_PIXELS) jr .spriteInvisible
 	ld a, c
 	add SPRITE_HEIGHT_PIXELS
-	cp 0 ; broken
+	cp 0
 	jr c, .spriteInvisible
+	jr z, .spriteInvisible
 	ld a, c
 	add SPRITE_HEIGHT_PIXELS
 	cp SCREEN_HEIGHT_PIXELS + SPRITE_HEIGHT_PIXELS
